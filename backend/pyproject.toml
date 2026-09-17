@@ -1,0 +1,13 @@
+[project]
+name = "daily-ai-news-backend"
+version = "0.1.0"
+description = "Daily AI news agent backend"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100

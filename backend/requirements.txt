@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+apscheduler
+openai
+httpx
+feedparser
+python-dotenv
+mcp
