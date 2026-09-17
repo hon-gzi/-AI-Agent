@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/data/sandbox/*
+!backend/data/sandbox/.gitkeep
+*.sqlite3
+node_modules/
+.venv/
