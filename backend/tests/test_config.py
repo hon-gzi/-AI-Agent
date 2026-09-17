@@ -46,3 +46,23 @@ def test_settings_has_all_fields():
     assert s.daily_run_hour == 8
     assert s.daily_run_minute == 0
     assert s.sandbox_root == PROJECT_ROOT / "backend" / "data" / "sandbox"
+
+
+def test_daily_run_hour_invalid_falls_back(monkeypatch, capsys):
+    monkeypatch.setenv("LLM_API_KEY", "k")
+    monkeypatch.setenv("LLM_BASE_URL", "https://x/v1")
+    monkeypatch.setenv("LLM_MODEL", "m")
+    monkeypatch.setenv("DAILY_RUN_HOUR", "abc")
+    s = load_settings()  # 不应抛异常
+    assert s.daily_run_hour == 8
+    assert "DAILY_RUN_HOUR" in capsys.readouterr().out
+
+
+def test_daily_run_hour_out_of_range_falls_back(monkeypatch, capsys):
+    monkeypatch.setenv("LLM_API_KEY", "k")
+    monkeypatch.setenv("LLM_BASE_URL", "https://x/v1")
+    monkeypatch.setenv("LLM_MODEL", "m")
+    monkeypatch.setenv("DAILY_RUN_HOUR", "99")
+    s = load_settings()  # 不应抛异常
+    assert s.daily_run_hour == 8
+    assert "DAILY_RUN_HOUR" in capsys.readouterr().out
