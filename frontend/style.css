@@ -1,0 +1,146 @@
+/* 极简样式:卡片分区 + 按钮 + 列表高亮 + pre 滚动。不引入框架。 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  background: #f5f6f8;
+  color: #222;
+  line-height: 1.6;
+}
+
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 20px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e4e8;
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.card h2 {
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+}
+
+.field {
+  margin-bottom: 10px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.field input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #2f6feb;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e5bd6;
+}
+
+button:disabled {
+  background: #9bb8f5;
+  cursor: not-allowed;
+}
+
+#save-prefs {
+  margin-top: 4px;
+}
+
+.status {
+  min-height: 1.4em;
+  font-size: 0.9rem;
+  margin: 10px 0 0;
+  color: #777;
+}
+
+.status.ok {
+  color: #1a7f37;
+}
+
+.status.err {
+  color: #c62828;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 8px;
+}
+
+#history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+}
+
+#history-list li {
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+#history-list li a {
+  color: #222;
+  text-decoration: none;
+}
+
+#history-list li a:hover {
+  color: #2f6feb;
+}
+
+#history-list li.selected {
+  background: #e8f0fe;
+}
+
+#history-list .when {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #fafbfc;
+  border: 1px solid #e2e4e8;
+  border-radius: 8px;
+  padding: 14px;
+  max-height: 420px;
+  overflow-y: auto;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.content.err {
+  color: #c62828;
+}

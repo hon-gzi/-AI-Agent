@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>每日 AI 新闻助手</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <h1>每日 AI 新闻助手</h1>
+
+    <section class="card" id="prefs">
+      <h2>订阅偏好</h2>
+      <div class="field">
+        <label for="nickname">昵称(可选,仅前端展示)</label>
+        <input id="nickname" type="text" placeholder="怎么称呼你" />
+      </div>
+      <div class="field">
+        <label for="topics">关注话题(逗号分隔)</label>
+        <input id="topics" type="text" placeholder="如:大模型, 芯片, 机器人" />
+      </div>
+      <div class="field">
+        <label for="keywords">关键词(逗号分隔)</label>
+        <input id="keywords" type="text" placeholder="如:OpenAI, Anthropic" />
+      </div>
+      <button id="save-prefs">保存偏好</button>
+      <p id="prefs-status" class="status"></p>
+    </section>
+
+    <section class="card" id="generate">
+      <h2>生成</h2>
+      <button id="generate">立即生成</button>
+      <p id="generate-status" class="status"></p>
+    </section>
+
+    <section class="card" id="history">
+      <h2>历史简报</h2>
+      <p class="hint">点击某条日期查看全文</p>
+      <p id="history-empty" class="hint"></p>
+      <ul id="history-list"></ul>
+      <pre id="briefing-content" class="content" hidden></pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
