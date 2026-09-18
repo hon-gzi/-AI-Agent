@@ -5,7 +5,7 @@
 若 briefings/<date>.md 已存在且非空,直接采用;否则才把 finish 的 final_text 落盘。
 """
 import json
-from datetime import date
+from datetime import date as _date
 from pathlib import Path
 
 from app.agent.llm import LLMClient
@@ -48,7 +48,7 @@ def run_agent_once(client_or_llm, settings=None, prefs=None, date=None, max_step
       或 {"status": "no_output", "date", "stopped_by"}(LLM 结束时无有效文本且沙箱无已有简报)。
     """
     settings = settings or load_settings()
-    date_str = date or date.today().isoformat()
+    date_str = date or _date.today().isoformat()
     registry = build_registry(settings.sandbox_root, settings=settings)
     if isinstance(client_or_llm, LLMClient):
         llm = client_or_llm
