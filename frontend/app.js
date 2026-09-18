@@ -15,10 +15,14 @@ function splitCsv(str) {
 }
 
 async function api(path, method = "GET", body) {
+  const headers = {};
+  const hasBody = body !== undefined;
+  if (hasBody) headers["Content-Type"] = "application/json";
+  // 仅在有 body 时设 Content-Type:避免 GET 也触发 CORS 预检,减少跨域开销。
   const res = await fetch(API_BASE + path, {
     method,
-    headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    headers,
+    body: hasBody ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
     let msg = "HTTP " + res.status;
