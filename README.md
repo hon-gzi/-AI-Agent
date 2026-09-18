@@ -64,12 +64,17 @@
 cd backend
 python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt   # Windows；Linux/mac 用 .venv/bin/pip
-.venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+.venv/Scripts/python -m app.main
 ```
 
-后端监听 `http://127.0.0.1:8000`，并挂载每日定时任务（按 `.env` 中的 `DAILY_RUN_*`）。
+`python -m app.main` 会 `create_app` + **start 每日定时任务**（按 `.env` 的 `DAILY_RUN_*`）+ 以 uvicorn 起在 `0.0.0.0:8000`。
 
-> 说明：`app.main` 暴露了模块级 `app`，`uvicorn app.main:app` 可直启；测试场景则用 `create_app(settings=...)` 工厂注入配置。
+> 若只想起后端（**不跑定时任务**，例如手动控制触发节奏）：
+> ```bash
+> .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+> ```
+> `uvicorn app.main:app` 走模块级 `app`，**不会**自动 `start_scheduler`——定时任务需另行 start。
+
 
 ### 前端
 
