@@ -154,6 +154,58 @@ def test_tools_payload_passed_to_api():
     assert kwargs["model"] == "m"
 
 
+def test_finish_mid_round_backfills_placeholder_for_unexecuted_tool_calls():
+    """一轮内 finish 出现在多个 tool_calls 中时,其后未执行的 tool_calls 也要补占位 tool 消息,
+    保证 assistant 声明的每个 tool_call 都有对应 tool 消息(OpenAI 协议完整性)。"""
+    client = _make_client([
+        _msg(None, [
+            _tcall("list_dir", {"path": "."}, tc_id="a"),
+            _tcall("finish", {"text": "done"}, tc_id="b"),
+            _tcall("write_file", {"path": "x", "content": "y"}, tc_id="c"),
+        ]),
+    ])
+    llm = LLMClient(client, model="m", registry={
+        "list_dir": lambda a: {"ok": True, "result": []},
+        "finish": lambda a: {"finish": a.get("text", "").strip() != "", "text": a.get("text", "")},
+        "write_file": lambda a: {"ok": True, "result": a},
+    })
+    out = llm.run(system="s", user="u")
+    assert out["stopped_by"] == "finish"
+    assert out["final_text"] == "done"
+    assert out["steps"] == 1
+
+
+def test_finish_mid_round_no_dangling_tool_call_messages():
+    """验证 finish 后未执行 tool_calls 被补占位:借助 SpyRegistry 记录被执行的 handler 名。"""
+    executed = []
+
+    def reg_for(name):
+        def _h(args):
+            if name == "finish":
+                return {"finish": True, "text": "done"}
+            executed.append(name)
+            return {"ok": True}
+        return _h
+
+    client = _make_client([
+        _msg(None, [
+            _tcall("list_dir", {"path": "."}, tc_id="a"),
+            _tcall("finish", {"text": "done"}, tc_id="b"),
+            _tcall("write_file", {"path": "x", "content": "y"}, tc_id="c"),
+        ]),
+    ])
+    llm = LLMClient(client, model="m",
+                    registry={"list_dir": reg_for("list_dir"),
+                              "finish": reg_for("finish"),
+                              "write_file": reg_for("write_file")})
+    out = llm.run(system="s", user="u")
+    assert out["stopped_by"] == "finish"
+    assert out["final_text"] == "done"
+    # write_file 在 finish 之后,不应被执行
+    assert "write_file" not in executed
+    assert "list_dir" in executed
+
+
 def test_bad_arguments_json_falls_back_to_empty_dict():
     """arguments 非法 JSON 时不崩,按 {} 处理(handler 内部自行兜缺参)。"""
     bad_tc = SimpleNamespace(id="1", type="function",

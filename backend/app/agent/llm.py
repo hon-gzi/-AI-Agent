@@ -42,15 +42,22 @@ class LLMClient:
             result = {"ok": False, "error": f"未知工具: {name}"}
         else:
             try:
-                result = handler(args)
+                raw = handler(args)
+                # 归一化:handler 应返回可 JSON 序列化 dict;None/非 dict 视为无产出
+                result = raw if isinstance(raw, dict) else {"ok": True, "result": raw}
             except Exception as e:  # 工具异常回传 LLM,不中断循环
                 result = {"ok": False, "error": f"{type(e).__name__}: {e}"}
-        finished = bool(result.get("finish"))
+        finished = bool(result.get("finish")) if isinstance(result, dict) else False
         msgs.append({"role": "tool", "tool_call_id": tc.id,
                      "content": json.dumps(result, ensure_ascii=False)})
         return result, finished
 
     def run(self, system, user, max_steps=None):
+        """驱动 function-calling 循环。返回 dict:
+          final_text: LLM 最终简报全文(有效时为字符串,无效为 None)
+          stopped_by: "finish" 或 "max_steps"
+          steps: 已完成的 LLM 调用轮数(= 实际发起 create 的次数,非工具执行次数)
+        """
         steps = max(1, self.max_steps if max_steps is None else max_steps)
         msgs = [
             {"role": "system", "content": system},
@@ -81,10 +88,17 @@ class LLMClient:
                     for tc in m.tool_calls
                 ],
             })
-            for tc in m.tool_calls:
+            for idx, tc in enumerate(m.tool_calls):
                 result, finished = self._exec_tool_call(tc, msgs)
                 if finished:
-                    # finish handler 返回 finish=True:取其 text 为最终输出
+                    # finish handler 返回 finish=True:取其 text 为最终输出。
+                    # 其后已声明但未执行的 tool_calls 补占位 tool 消息,
+                    # 保证消息序列协议完整(每个 assistant tool_call 都有对应 tool 消息)。
+                    for skip in m.tool_calls[idx + 1:]:
+                        msgs.append({"role": "tool", "tool_call_id": skip.id,
+                                     "content": json.dumps(
+                                         {"ok": False, "error": "skipped: finish called"},
+                                         ensure_ascii=False)})
                     final_text = (result.get("text") or "").strip() or None
                     stopped_by = "finish"
                     break
