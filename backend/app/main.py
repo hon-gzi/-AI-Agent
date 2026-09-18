@@ -39,6 +39,11 @@ def start_scheduler(app):
         sched.start()
 
 
+# 模块级 app:供 `uvicorn app.main:app` 直接启动(工厂 create_app 仍用于测试/注入 settings)。
+# create_app() 读 .env(测试环境无 .env 时 load_settings 已做默认兜底),import 侧效应可接受。
+app = create_app()
+
+
 if __name__ == "__main__":
     import uvicorn
     from app.config import load_settings
