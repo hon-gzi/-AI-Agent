@@ -127,6 +127,7 @@ async function selectBriefing(date, list) {
     const data = await api("/api/briefings/" + encodeURIComponent(date));
     content.textContent = data.content;
     content.hidden = false;
+    content.classList.remove("err");
   } catch (e) {
     content.textContent = "加载简报失败: " + e.message;
     content.hidden = false;
