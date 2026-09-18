@@ -76,3 +76,17 @@ def test_briefing_detail_missing(tmp_sandbox):
     with TestClient(app) as c:
         r = c.get("/api/briefings/2026-01-01")
         assert r.status_code == 404
+
+
+def test_briefing_detail_rejects_path_traversal(tmp_sandbox):
+    """date 注入防护:../ 与 URL 编码变体均被正则拒绝,且确认 4xx 而非 200。"""
+    app = _app(tmp_sandbox)
+    # 在 briefings 外放一个敏感文件,验证无法越界读取
+    secret = tmp_sandbox / "secrets.txt"
+    secret.write_text("TOP SECRET", encoding="utf-8")
+    with TestClient(app) as c:
+        for case in ("..", "..%2fsecrets", "%2e%2e%2fsecrets.txt",
+                     "2026-13-45", "2026-9-8", "abc"):
+            r = c.get(f"/api/briefings/{case}")
+            assert r.status_code in (400, 404), f"{case!r} -> {r.status_code}"
+            assert r.status_code != 200
