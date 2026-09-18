@@ -1,13 +1,19 @@
 """RSS 源:抓取内置/配置的 RSS feed,解析后落地沙箱内文本文件。"""
-import feedparser
+import httpx
 from pathlib import Path
 from datetime import date
 
+import feedparser
 
+# 网络超时(秒):httpx 无超时会 hang 死定时任务,统一带上。
+HTTP_TIMEOUT = 10
+
+# 可达性说明:在 2026-09-18 本机实测——
+#   hnrss frontpage (200)、arxiv cs.AI (200) 可达;
+#   feeds.arxiv.org/arxiv/ai DNS 解析失败,已从列表移除,不再留会 hang/报错的源。
 DEFAULT_FEEDS = [
     "https://hnrss.org/frontpage",
     "https://arxiv.org/rss/cs.AI",
-    "https://feeds.arxiv.org/arxiv/ai",  # 备用
 ]
 
 
@@ -19,11 +25,16 @@ def _get(entry, key, default=""):
 
 
 def fetch_one(url: str):
-    """抓取单个 feed,返回 feedparser 结果;网络/解析异常抛错由调用方处理。"""
-    resp = feedparser.parse(url)
-    if resp.bozo and not resp.entries:
-        raise RuntimeError(f"feed 解析失败: {url} {resp.bozo_exception}")
-    return resp
+    """抓取单个 feed(带超时),返回 feedparser 结果;网络/解析异常抛错由调用方处理。
+
+    用 httpx.get(timeout=HTTP_TIMEOUT) 抓 bytes 再喂给 feedparser.parse(data),
+    避免 feedparser 直接 parse(url) 无超时导致定时任务 hang 死。"""
+    resp = httpx.get(url, timeout=HTTP_TIMEOUT, follow_redirects=True)
+    resp.raise_for_status()
+    parsed = feedparser.parse(resp.content)
+    if parsed.bozo and not parsed.entries:
+        raise RuntimeError(f"feed 解析失败: {url} {parsed.bozo_exception}")
+    return parsed
 
 
 def fetch_all_feeds(urls, sandbox_root, topic=None):
