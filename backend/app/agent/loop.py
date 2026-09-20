@@ -22,8 +22,8 @@ def _system_prompt(prefs, date_str):
         "可用工具:search_rss(抓 RSS 落地沙箱)、web_search(联网搜索,可能降级)、"
         "list_dir/read_file/search_content(读沙箱已抓内容)、bash(只读命令)、"
         "write_file(把简报写入沙箱 briefings/ 目录)、finish(结束并输出最终简报全文)。\n"
-        "流程建议:先 search_rss 抓内容 → list_dir/search_content/read_file 挑取 → "
-        "write_file 写出简报 → finish 输出最终简报全文。工具顺序由你决定。"
+        f"【强制】write_file 写简报时,文件名必须严格为 briefings/{date_str}.md,不得自定其它文件名;"
+        "写完简报必须再调用 finish 把简报全文作为 text 传回,否则任务视为未完成。工具顺序由你决定,但上述文件名与 finish 是硬性要求。"
     )
 
 

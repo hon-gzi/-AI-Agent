@@ -8,6 +8,9 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# 简报文件名规范:YYYY-MM-DD.md。LLM 可能因 write_file 起自定义名(如 *_ai_news.md)
+# 产生脏文件,列表时只认规范命名,从源头避免脏文件名进入前端。
+_BRIEFING_FILE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 
 
 def build_router(settings, prefs_state, run_agent_once):
@@ -26,6 +29,9 @@ def build_router(settings, prefs_state, run_agent_once):
         briefings_dir.mkdir(parents=True, exist_ok=True)
         items = []
         for f in sorted(briefings_dir.glob("*.md"), reverse=True):
+            # 只列规范的 YYYY-MM-DD.md,过滤 LLM 误写的自定义文件名(避免点进去 404)
+            if not _BRIEFING_FILE_RE.match(f.name):
+                continue
             items.append({"date": f.stem, "path": str(f),
                          "generated_at": f.stat().st_mtime})
         return {"items": items}
