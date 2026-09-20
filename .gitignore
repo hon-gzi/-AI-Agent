@@ -7,3 +7,5 @@ backend/data/sandbox/*
 *.sqlite3
 node_modules/
 .venv/
+backend/server.log
+frontend/frontend.log
